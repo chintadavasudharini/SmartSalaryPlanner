@@ -3,7 +3,7 @@ Python Context Managers for resource management and benchmarking.
 """
 
 import time
-from typing import Literal
+from typing import Literal, Self
 
 
 class PerformanceTimer:
@@ -17,7 +17,7 @@ class PerformanceTimer:
         self.start_time: float = 0.0
         self.elapsed_time_ms: float = 0.0
 
-    def __enter__(self) -> "PerformanceTimer":
+    def __enter__(self) -> Self:
         self.start_time = time.perf_counter()
         return self
 

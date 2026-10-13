@@ -4,10 +4,13 @@ Encapsulates all Firebase Firestore database operations ensuring per-user data i
 Supports fallback in-memory store for isolated testing environment.
 """
 
+import logging
 import uuid
 from typing import Any
 
 from app.repositories.base import BaseRepository
+
+logger = logging.getLogger(__name__)
 
 # Global in-memory storage for test/demo-less operation when Firebase Admin SDK is unconfigured
 _IN_MEMORY_DB: dict[str, dict[str, dict[str, Any]]] = {}
@@ -27,7 +30,8 @@ class FirestoreRepository(BaseRepository):
 
             if firebase_admin._apps:
                 self._db = firestore.client()
-        except Exception:
+        except Exception as e:  # noqa: BLE001
+            logger.debug("Firestore client init skipped: %s", e)
             self._db = None
 
     async def get_all(self, collection_name: str, user_id: str) -> list[dict[str, Any]]:
@@ -49,8 +53,8 @@ class FirestoreRepository(BaseRepository):
                     item["id"] = d.id
                     results.append(item)
                 return results
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Firestore get_all failed for user %s, using fallback: %s", user_id, e)
 
         # Fallback to isolated memory store
         user_store = _IN_MEMORY_DB.get(user_id, {}).get(collection_name, {})
@@ -72,8 +76,8 @@ class FirestoreRepository(BaseRepository):
                     res = doc.to_dict()
                     res["id"] = doc.id
                     return res
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Firestore get_by_id failed for record %s: %s", record_id, e)
 
         user_store = _IN_MEMORY_DB.get(user_id, {}).get(collection_name, {})
         return user_store.get(record_id)
@@ -91,8 +95,8 @@ class FirestoreRepository(BaseRepository):
                     collection_name
                 ).document(record_id).set(data)
                 return data
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Firestore create failed for user %s: %s", user_id, e)
 
         if user_id not in _IN_MEMORY_DB:
             _IN_MEMORY_DB[user_id] = {}
@@ -114,8 +118,8 @@ class FirestoreRepository(BaseRepository):
                     collection_name
                 ).document(record_id).update(data)
                 return data
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Firestore update failed for record %s: %s", record_id, e)
 
         if user_id in _IN_MEMORY_DB and collection_name in _IN_MEMORY_DB[user_id]:
             _IN_MEMORY_DB[user_id][collection_name][record_id] = data
@@ -128,8 +132,8 @@ class FirestoreRepository(BaseRepository):
                     collection_name
                 ).document(record_id).delete()
                 return True
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Firestore delete failed for record %s: %s", record_id, e)
 
         if user_id in _IN_MEMORY_DB and collection_name in _IN_MEMORY_DB[user_id]:
             _IN_MEMORY_DB[user_id][collection_name].pop(record_id, None)

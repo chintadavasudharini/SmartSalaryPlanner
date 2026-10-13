@@ -3,9 +3,12 @@ ThreadPoolExecutor Concurrency for Parallel Data Retrieval.
 Ideal for concurrent I/O-bound module retrieval (Income, EMI, Household, Expenses, Savings, Investments, Goals).
 """
 
+import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def parallel_module_retrieval(
@@ -30,7 +33,8 @@ def parallel_module_retrieval(
             try:
                 data = future.result()
                 results[module_name] = data
-            except Exception:
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Parallel fetch failed for module %s: %s", module_name, e)
                 results[module_name] = []
 
     return results

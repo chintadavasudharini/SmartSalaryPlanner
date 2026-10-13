@@ -3,7 +3,11 @@ API Dependency Utilities: User Authentication Injection.
 Extracts authenticated user ID from Authorization header or fallback header for API calls.
 """
 
+import logging
+
 from fastapi import Header
+
+logger = logging.getLogger(__name__)
 
 
 def get_current_user_id(
@@ -26,7 +30,8 @@ def get_current_user_id(
 
                 decoded = auth.verify_id_token(token)
                 return decoded.get("uid", token)
-            except Exception:
+            except Exception as e:  # noqa: BLE001
+                logger.debug("Firebase auth verify failed, using token string directly: %s", e)
                 return token
 
     # Default fallback user ID if not provided (ensures API usability in client session)

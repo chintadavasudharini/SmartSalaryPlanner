@@ -4,10 +4,13 @@ Integrates Gemini API via backend service layer.
 NEVER exposes API keys to frontend.
 """
 
+import logging
 import os
 from typing import Any
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiAIService:
@@ -24,7 +27,8 @@ class GeminiAIService:
                 from google import genai
 
                 self.client = genai.Client(api_key=self.api_key)
-            except Exception:
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Failed to initialize Google GenAI client: %s", e)
                 self.client = None
 
     def generate_personalized_recommendations(
@@ -83,8 +87,8 @@ class GeminiAIService:
                         "ai_powered": True,
                         "key_takeaways": self._extract_key_takeaways(summary),
                     }
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Gemini recommendation generation failed, using fallback: %s", e)
 
         # Deterministic, rule-based fallback if API key is not set or network fails
         return self._generate_rule_based_fallback(summary)
@@ -119,8 +123,8 @@ class GeminiAIService:
                 )
                 if response and response.text:
                     return response.text.strip()
-            except Exception:
-                pass
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Gemini question answering failed, using fallback: %s", e)
 
         # Fallback question response
         return (

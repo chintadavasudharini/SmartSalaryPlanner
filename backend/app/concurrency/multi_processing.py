@@ -3,6 +3,7 @@ Multiprocessing Concurrency for CPU-Bound Algorithm Performance Benchmark Analys
 Demonstrates bypassing the Python GIL for heavy CPU-bound algorithmic computation.
 """
 
+import logging
 import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import Any
@@ -10,6 +11,8 @@ from typing import Any
 from app.algorithms.branch_bound import branch_bound_deficit_reduction
 from app.algorithms.dynamic_programming import optimize_goals_dp
 from app.algorithms.greedy import calculate_greedy_salary_plan
+
+logger = logging.getLogger(__name__)
 
 
 def _run_single_analysis(payload: dict[str, Any]) -> dict[str, Any]:
@@ -77,7 +80,8 @@ def run_parallel_algorithm_analysis(
                 "dp_goal_analysis": completed[1],
                 "branch_bound_analysis": completed[2],
             }
-    except Exception:
+    except Exception as e:  # noqa: BLE001
+        logger.warning("ProcessPool analysis failed, falling back to sequential: %s", e)
         # Fallback to sequential execution if ProcessPool is restricted by environment
         results = {
             "greedy_analysis": _run_single_analysis(payloads[0]),

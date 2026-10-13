@@ -88,4 +88,4 @@ def get_unique_categories(records: list[dict[str, Any]]) -> list[str]:
         for r in records
         if "category" in r or "item_name" in r
     }
-    return sorted(list(categories))
+    return sorted(categories)

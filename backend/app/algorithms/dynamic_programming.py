@@ -56,13 +56,13 @@ def optimize_goals_dp(
         # Utility score: Emergency Fund / High priority gets high utility weight
         value = max(1, 10 - prio) * 10
         scaled_cost = (
-            max(1, int(round(cost / (scale_factor / 100.0)))) if cost > 0 else 1
+            max(1, round(cost / (scale_factor / 100.0))) if cost > 0 else 1
         )
         valid_items.append(
             {"original": g, "cost": cost, "scaled_cost": scaled_cost, "value": value}
         )
 
-    capacity = int(round(available_budget / (scale_factor / 100.0)))
+    capacity = round(available_budget / (scale_factor / 100.0))
     N = len(valid_items)
 
     # Initialize DP matrix: (N + 1) x (capacity + 1)
