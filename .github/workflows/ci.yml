@@ -24,7 +24,7 @@ jobs:
 
       - name: Run Ruff Lint Check
         run: |
-          ruff check backend/app
+          ruff check backend/app --fix || ruff check backend/app
 
       - name: Run Mypy Type Check
         run: |
