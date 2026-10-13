@@ -4,16 +4,24 @@ Provides backend user registration verification and auth health endpoints.
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 class UserRegisterSchema(BaseModel):
     full_name: str = Field(..., min_length=2)
-    email: EmailStr
+    email: str = Field(..., min_length=5)
     password: str = Field(..., min_length=6)
     confirm_password: str = Field(..., min_length=6)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        v_clean = v.strip().lower()
+        if "@" not in v_clean or "." not in v_clean.split("@")[-1]:
+            raise ValueError("Invalid email format.")
+        return v_clean
 
 
 @router.post("/verify-registration")
