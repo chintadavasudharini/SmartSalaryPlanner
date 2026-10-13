@@ -10,7 +10,7 @@ Demonstrates Object-Oriented Programming (OOP) principles:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -25,7 +25,7 @@ class FinancialRecord(ABC):
     user_id: str = ""
     amount: float = 0.0
     date: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%d")
     )
 
     @abstractmethod
@@ -201,7 +201,7 @@ class Saving(FinancialRecord):
     current_amount: float = 0.0
     monthly_contribution: float = 0.0
     target_date: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%d")
     )
 
     def get_monthly_value(self) -> float:
@@ -250,7 +250,7 @@ class Investment(FinancialRecord):
     amount_invested: float = 0.0
     monthly_contribution: float = 0.0
     start_date: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%d")
     )
 
     def get_monthly_value(self) -> float:
@@ -307,7 +307,7 @@ class FinancialGoal(FinancialRecord):
     target_amount: float = 0.0
     current_amount: float = 0.0
     deadline: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        default_factory=lambda: datetime.now(UTC).strftime("%Y-%m-%d")
     )
     monthly_contribution: float = 0.0
     priority: int = 1  # 1 = Highest, 5 = Lowest
@@ -328,9 +328,9 @@ class FinancialGoal(FinancialRecord):
     def calculate_remaining_months(self) -> int:
         try:
             deadline_dt = datetime.strptime(self.deadline, "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
+                tzinfo=UTC
             )
-            today = datetime.now(timezone.utc)
+            today = datetime.now(UTC)
             months = (deadline_dt.year - today.year) * 12 + (
                 deadline_dt.month - today.month
             )
